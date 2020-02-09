@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css?family=Raleway+Dots" rel="stylesheet">
+  <script src="https://d3js.org/d3.v5.min.js">
+  </script>
+
+<!-- mamer start-->
+<!-- Creating the slider --> 
+
+<input type="range" name="mySlider" id=mySlider list = "tickmarks" Value = "100" style="position: absolute; margin-left: 0px; margin-top: 70px;">
+  
+<br><br>
+<!-- Creating the buttons --> 
+<button id="reset" style="position: absolute; margin-left: 500px; margin-top: 40px;">Reset</button>
+<button id="start" style="position: absolute; margin-left: 450px; margin-top: 40px;">Start</button>
+<!-- mamer end -->
+
+  
+  
+  
+  <style>
+    text{
+      font-size: 10px;
+      font-family: Open Sans, sans-serif;
+    }
+   
+    text.title{
+      font-size: 24px;
+      font-weight: 500;
+    }
+      text.subTitle{
+        font-weight: 500;
+        fill: #777777;
+      }
+      text.caption{
+        font-weight: 400;
+        font-size: 14px;
+        fill: #777777;
+      }
+      text.speed{
+        font-weight: 400;
+        font-size: 14px;
+      }
+      text.label{
+        font-weight: 600;
+      }
+    
+      text.valueLabel{
+       font-weight: 300;
+      }
+    
+      text.yearText{
+        font-size: 64px;
+        font-weight: 700;
+        opacity: 0.25;
+      }
+      .tick text {
+        fill: #000000;
+      }
+      .xAxis .tick:nth-child(2) text {
+        text-anchor: start;
+      }
+      .tick line {
+        shape-rendering: CrispEdges;
+        stroke: #dddddd;
+      }
+      .tick line.origin{
+        stroke: #aaaaaa;
+      }
+      path.domain{
+        display: none;
+      }
+  </style>
+</head>
+
+<body>
+  <script>
+ 
+ // Append SVG   
+   var svg = d3.select("body").append("svg")
+      .attr("width", 1000)
+      .attr("height", 500);
+    
+ // create transitions duration
+    var tickDuration = 100;
+
+ // Initial values 
+    var top_n = 10;
+    var height = 500;
+    var width = 960;
+    
+    const margin = {
+      top: 80,
+      right: 10,
+      bottom: 15,
+      left: 10
+    };
+
+// Scale color for the bars 
+    var colors = function(d) {
+         if(d.name == "Facebook") {return "#3B5998"
+         } else {
+           {if(d.name == "YouTube") {return "#C4302B"
+         } else {
+           {if(d.name == "Flickr") {return "#FF0084"
+         } else {
+           {if(d.name == "Friendster") {return "#2dd130"
+         } else {
+           {if(d.name == "Google Buzz") {return "#ffff00"
+         } else {
+           {if(d.name == "Google+") {return "#dd4b39"
+         } else {
+           {if(d.name == "Hi5") {return "#FD9827"
+         } else {
+           {if(d.name == "Instagram") {return "#af1281"
+         } else {
+           {if(d.name == "MySpace") {return "#00405D"
+         } else {
+           {if(d.name == "Orkut") {return "#89b1d6"
+         } else {
+           {if(d.name == "Pinterest") {return "#c8232c"
+         } else {
+           {if(d.name == "Reddit") {return "#ff5700"
+         } else {
+           {if(d.name == "Snapchat") {return "#fffc00"
+         } else {
+           {if(d.name == "TikTok") {return "#69C9D0"
+         } else {
+           {if(d.name == "Tumblr") {return "#34526F"
+         } else {
+           {if(d.name == "WeChat") {return "#7BB32E"
+         } else {
+           {if(d.name == "Weibo") {return "#Df2029"
+         } else {
+           {if(d.name == "Whatsapp") {return "#39d425"
+         } else {
+           {if(d.name == "Google Buzz") {return "#b7c42b"
+         } else {
+           {if(d.name == "Twitter") {return "#38A1F3"
+         } else {
+           return d.colour
+         }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+
+
+// Creating bar variable
+    
+    let barPadding = (height-(margin.bottom+margin.top))/(top_n*5);
+
+
+// Putting title caption and speed bar text
+    
+    let title = svg.append('text')
+     .attr('class', 'title')
+     .attr('y', 20)
+     .attr('x', 250)
+     .html('Most Popular Social Networks 2002 - 2020');   
+    let caption = svg.append('text')
+     .attr('class', 'caption')
+     .attr('x', width-5)
+     .attr('y', height-5)
+     .style('text-anchor', 'end')
+     .html('');    
+    let speed = svg.append('text')
+     .attr('class', 'speed')
+     .attr('x', 110)
+     .attr('y', 20)
+     .style('text-anchor', 'end')
+     .html('Speed Adjuster'); 
+   
+
+// Loading data
+    d3.csv('https://gist.githubusercontent.com/AmerMo/f58ac344a837f6717db9e0946cab61f9/raw/b7058624dc414e5c57b7c480f1430e36a3a5840a/data').then(function(data) {
+
+  
+
+// Start Button
+     
+d3.select("#start")
+  .on("click", function() {
+ 
+// Remove previous bar if exist
+  
+document.getElementById("start").disabled = true;
+  d3.selectAll("rect.bar").remove()
+  d3.selectAll("labels").remove() 
+  d3.selectAll("valueLabels").remove()
+  d3.selectAll('text.label').remove()
+  d3.selectAll('text.valueLabel').remove()
+  d3.selectAll('g').remove()
+  d3.selectAll('.xAxis').remove()
+  d3.selectAll('.label').remove()
+  d3.selectAll('text').remove()
+ 
+// Re load tittles because 3.selectAll('text').remove() eliminates them
+    let title = svg.append('text')
+     .attr('class', 'title')
+     .attr('y', 20)
+     .attr('x', 250)
+     .html('Most Popular Social Networks 2002 - 2020');   
+    let caption = svg.append('text')
+     .attr('class', 'caption')
+     .attr('x', width-5)
+     .attr('y', height-5)
+     .style('text-anchor', 'end')
+     .html('');    
+    let speed = svg.append('text')
+     .attr('class', 'speed')
+     .attr('x', 110)
+     .attr('y', 20)
+     .style('text-anchor', 'end')
+     .html('Speed Adjuster'); 
+  
+// First Year
+let year = 2002;
+  
+// Adjusting some variables
+
+       data.forEach(d => {
+        d.value = +d.value,
+        d.lastValue = +d.lastValue,
+        d.value = isNaN(d.value) ? 0 : d.value,
+        d.year = +d.year,
+        d.colour = d3.hsl(Math.random()*360,0.6,0.6)
+      });
+
+
+// Getting first slice of data year 2002
+
+     let yearSlice = data.filter(d => d.year == year && !isNaN(d.value))
+      .sort((a,b) => b.value - a.value)
+      .slice(0, top_n);
+  
+      yearSlice.forEach((d,i) => d.rank = i);
+    
+
+
+// appending x axis and y axis
+  
+     let x = d3.scaleLinear()
+        .domain([0, d3.max(yearSlice, d => d.value)])
+        .range([margin.left, width-margin.right-65]);
+  
+     let y = d3.scaleLinear()
+        .domain([top_n, 0])
+        .range([height-margin.bottom, margin.top]);
+  
+     let xAxis = d3.axisTop()
+        .scale(x)
+        .ticks(width > 500 ? 5:2)
+        .tickSize(-(height-margin.top-margin.bottom))
+        .tickFormat(d => d3.format(',')(d));
+  
+     svg.append('g')
+       .attr('class', 'axis xAxis')
+       .attr('transform', `translate(0, ${margin.top})`)
+       .call(xAxis)
+       .selectAll('.tick line')
+       .classed('origin', d => d == 0);
+  
+
+// Appending initial bar, Label and value label
+
+//Bar
+     svg.selectAll('rect.bar')
+        .data(yearSlice, d => d.name)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar')
+        .attr('x', x(0)+1)
+        .attr('width', d => x(d.value)-x(0)-1)
+        .attr('y', d => y(d.rank)+5)
+        .attr('height', y(1)-y(0)-barPadding)
+        .style('fill', colors);
+
+// Text label
+  
+     svg.selectAll('text.label')
+        .data(yearSlice, d => d.name)
+        .enter()
+        .append('text')
+        .attr('class', 'label')
+        .attr('x', d => x(d.value)-8)
+        .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1)
+        .style('text-anchor', 'end')
+        .html(d => d.name);
+ 
+// Values
+
+    svg.selectAll('text.valueLabel')
+      .data(yearSlice, d => d.name)
+      .enter()
+      .append('text')
+      .attr('class', 'valueLabel')
+      .attr('x', d => x(d.value)+5)
+      .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1)
+      .text(d => d3.format(',.0f')(d.lastValue));
+
+ 
+// Appending YearText
+    
+    let yearText = svg.append('text')
+      .attr('class', 'yearText')
+      .attr('x', width-margin.right-50)
+      .attr('y', height-25)
+      .style('text-anchor', 'end')
+      .html(" ")
+      .call(halo, 10);
+     
+
+// Creating interval iteration through all years
+  
+   let ticker = d3.interval(e => {
+
+
+// Slicing per year
+     
+      yearSlice = data.filter(d => d.year == year && !isNaN(d.value))
+        .sort((a,b) => b.value - a.value)
+        .slice(0,top_n);
+
+// Adjusting Rank
+      yearSlice.forEach((d,i) => d.rank = i);
+
+     
+
+// transition xAxis
+      x.domain([0, d3.max(yearSlice, d => d.value)]); 
+
+      svg.select('.xAxis')
+        .transition()
+        .duration(tickDuration)
+        .ease(d3.easeLinear)
+        .call(xAxis);
+
+// Transition bars, labels, value labels
+       let bars = svg.selectAll('.bar').data(yearSlice, d => d.name);
+ 
+//Bars Transition
+       bars
+        .enter()
+        .append('rect')
+        .attr('class', d => `bar ${d.name.replace(/\s/g,'_')}`)
+        .attr('x', x(0)+1)
+        .attr( 'width', d => x(d.value)-x(0)-1)
+        .attr('y', d => y(top_n+1)+5)
+        .attr('height', y(1)-y(0)-barPadding)
+        .style('fill', colors
+      )
+        .transition()
+          .duration(tickDuration)
+          .ease(d3.easeLinear)
+          .attr('y', d => y(d.rank)+5);
+          
+       bars
+        .transition()
+          .duration(tickDuration)
+          .ease(d3.easeLinear)
+          .attr('width', d => x(d.value)-x(0)-1)
+          .attr('y', d => y(d.rank)+5);
+            
+       bars
+        .exit()
+        .transition()
+          .duration(tickDuration)
+          .ease(d3.easeLinear)
+          .attr('width', d => x(d.value)-x(0)-1)
+          .attr('y', d => y(top_n+1)+5)
+          .remove();
+
+// Labels Transition
+       let labels = svg.selectAll('.label')
+          .data(yearSlice, d => d.name);
+     
+       labels
+        .enter()
+        .append('text')
+        .attr('class', 'label')
+        .attr('x', d => x(d.value)-8)
+        .attr('y', d => y(top_n+1)+5+((y(1)-y(0))/2))
+        .style('text-anchor', 'end')
+        .html(d => d.name)    
+        .transition()
+          .duration(tickDuration)
+          .ease(d3.easeLinear)
+          .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1);
+             
+    
+   	   labels
+          .transition()
+          .duration(tickDuration)
+            .ease(d3.easeLinear)
+            .attr('x', d => x(d.value)-8)
+            .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1);
+     
+       labels
+          .exit()
+          .transition()
+            .duration(tickDuration)
+            .ease(d3.easeLinear)
+            .attr('x', d => x(d.value)-8)
+            .attr('y', d => y(top_n+1)+5)
+            .remove();
+     
+// Value Transitions  
+     
+       let valueLabels = svg.selectAll('.valueLabel').data(yearSlice, d => d.name);
+    
+       valueLabels
+          .enter()
+          .append('text')
+          .attr('class', 'valueLabel')
+          .attr('x', d => x(d.value)+5)
+          .attr('y', d => y(top_n+1)+5)
+          .text(d => d3.format(',.0f')(d.lastValue))
+          .transition()
+            .duration(tickDuration)
+            .ease(d3.easeLinear)
+            .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1);
+            
+       valueLabels
+          .transition()
+            .duration(tickDuration)
+            .ease(d3.easeLinear)
+            .attr('x', d => x(d.value)+5)
+            .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1)
+            .tween("text", function(d) {
+               let i = d3.interpolateRound(d.lastValue, d.value);
+               return function(t) {
+                 this.textContent = d3.format(',')(i(t));
+              };
+            });
+      
+     
+      valueLabels
+        .exit()
+        .transition()
+          .duration(tickDuration)
+          .ease(d3.easeLinear)
+          .attr('x', d => x(d.value)+5)
+          .attr('y', d => y(top_n+1)+5)
+          .remove();
+
+
+// Adjusting year
+      yearText.html(~~year);
+     
+     
+
+// exit Condition 
+     if(year == 2020) {
+       ticker.stop();
+       document.getElementById("start").disabled = false;}
+
+
+// Changing year for next iteration
+     year = d3.format('.1f')((+ year) + 0.1);
+   },tickDuration);
+
+  
+
+// Reset button
+d3.select("#reset")
+  .on("click", function() {
+  year = 2002
+  ticker.stop()
+  d3.selectAll("rect.bar").remove()
+  d3.selectAll("labels").remove() 
+  d3.selectAll("valueLabels").remove()
+  d3.selectAll('text.label').remove()
+  d3.selectAll('text.valueLabel').remove()
+  d3.selectAll('g').remove()
+  d3.selectAll('.xAxis').remove()
+  d3.selectAll('.label').remove()
+  d3.selectAll('text').remove()
+  
+  //Re enable start button
+  document.getElementById("start").disabled = false;
+
+  //Re load text after remove
+    let title = svg.append('text')
+     .attr('class', 'title')
+     .attr('y', 20)
+     .attr('x', 250)
+     .html('Most Popular Social Networks 2002 - 2020');   
+    let caption = svg.append('text')
+     .attr('class', 'caption')
+     .attr('x', width-5)
+     .attr('y', height-5)
+     .style('text-anchor', 'end')
+     .html('');    
+    let speed = svg.append('text')
+     .attr('class', 'speed')
+     .attr('x', 110)
+     .attr('y', 20)
+     .style('text-anchor', 'end')
+     .html('Speed Adjuster'); 
+})
+
+// Slider speed control 
+d3.select("#mySlider").on("input", function() {
+  
+  if(+this.value<10){update(1000);}
+		else{
+      {if(+this.value<20){update(900)}
+			else{{if(+this.value<30){update(800)}
+			else{{if(+this.value<40){update(700)}
+			else{{if(+this.value<50){update(600)}
+			else{{if(+this.value<60){update(500)}
+			else{{if(+this.value<70){update(400)}
+			else{{if(+this.value<80){update(300)}
+			else{{if(+this.value<90){update(200)}
+			else{update(100)}
+      }}}}}}}}}}}}}}}
+    }
+})  
+    function update(mySlider) {
+		tickDuration = mySlider 
+}
+})
+})
+
+
+ const halo = function(text, strokeWidth) {
+  text.select(function() { return this.parentNode.insertBefore(this.cloneNode(true), this); })
+    .style('fill', '#ffffff')
+     .style( 'stroke','#ffffff')
+     .style('stroke-width', strokeWidth)
+     .style('stroke-linejoin', 'round')
+     .style('opacity', 1);
+   
+}   
+ 
+      
+
+
+</script>
+</body>
